@@ -1,5 +1,6 @@
 package com.nta.forum.domain.topico;
 
+import com.nta.forum.domain.resposta.Resposta;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.List;
 
 @Table(name="topicos")
 @Entity(name="Topico")
@@ -33,6 +35,9 @@ public class Topico {
     private Estado estado;
     private String autor;
     private String curso;
+
+    @OneToMany(mappedBy = "idTopico", cascade = CascadeType.ALL)
+    private List<Resposta> respostas;
 
     public Topico(DadosCadastroTopico dados) {
         this.titulo=dados.titulo();

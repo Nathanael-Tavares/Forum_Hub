@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
@@ -18,13 +19,17 @@ public class TopicoController {
     private TopicoRepository repository;
     @PostMapping
     @Transactional
-    public void cadastrar(@RequestBody @Valid DadosCadastroTopico dados){
-       repository.save(new Topico(dados));
+    public ResponseEntity cadastrar(@RequestBody @Valid DadosCadastroTopico dados, UriComponentsBuilder uriBuilder){
+
+        var topico= new Topico(dados);
+       repository.save(topico);
+       var uri= uriBuilder.path("/topicos/{id}").buildAndExpand(topico.getId()).toUri();
+       return ResponseEntity.created(uri).body(new DadosDetalhamentoTopico(topico));
     }
     @GetMapping
-    public List<DadosListagemTopico> listar(){
-        return repository.findAll().stream().map(DadosListagemTopico::new).toList();
-
+    public ResponseEntity<List<DadosListagemTopico>> listar(){
+        var listaTopico= repository.findAll().stream().map(DadosListagemTopico::new).toList();
+        return ResponseEntity.ok(listaTopico);
     }
     @GetMapping("/{id}")
     public ResponseEntity detalhar(@PathVariable Long id) {
@@ -33,16 +38,18 @@ public class TopicoController {
     }
     @PutMapping
     @Transactional
-    public void atualizar(@RequestBody @Valid  DadosAtualizacaoTopico dados){
+    public ResponseEntity atualizar(@RequestBody @Valid  DadosAtualizacaoTopico dados){
         var topico= repository.getReferenceById(dados.id());
         topico.atualizarInformações(dados);
-
+        return ResponseEntity.ok(new DadosDetalhamentoTopico(topico));
     }
 
     @DeleteMapping("/{id}")
     @Transactional
-    public void excluir(@PathVariable Long id){
+    public ResponseEntity excluir(@PathVariable Long id){
         repository.deleteById(id);
+
+        return ResponseEntity.noContent().build();
     }
 
 }
